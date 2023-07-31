@@ -1,0 +1,11 @@
+oauth.json
+credentials.json
+
+duplicates.log
+errors.log
+added.log
+not_found.log
+
+venv/
+
+.mypy_cache/
