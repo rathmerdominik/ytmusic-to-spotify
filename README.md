@@ -2,7 +2,7 @@
 
 I needed a quick way to transfer my YouTube Music likes over to Spotify as there is no official Linux YouTube music client and the third party ones are just painful to use as they are laggy and full of errors.
 
-This script ports all of your Youtube Music likes over to Spotify. There is no need to create a file or put your credentials in a config file. Everything will be done over OAuth and Terminal questions. 
+This script ports all of your Youtube Music likes over to Spotify. There is no need to create a file or put your credentials in a config file. Everything will be done over OAuth and Terminal questions.
 
 The script will generate 4 files when it is done:  
 The `error.log` file contains all the errors that occur during the run  
@@ -12,4 +12,6 @@ The `added.log` file contains all found and converted tracks
 
 ### IMPORTANT
 
-By default the script clears out your entire Spotify Library to have a clean starting base. This behaviour can be disabled by setting the constant ```CLEANUP_FIRST``` inside the code to False
+By default the script clears out your entire Spotify Library to have a clean starting base. This behaviour can be disabled by setting the constant `CLEANUP_FIRST` inside the code to False.
+
+If you have a lot of missing entries you can try to set the `DIRTY_SEARCH_ON_MULTIPLE` constant to True. This can have varying quality results though! 

@@ -1,12 +1,15 @@
 import os
-import spotipy
-import ytmusicapi
+import spotipy  # type: ignore
+import ytmusicapi  # type: ignore
+
+from typing import List
 
 from termcolor import cprint
 
-from librespot.core import Session
+from librespot.core import Session  # type: ignore
 
 CLEANUP_FIRST = True  # Delete entire spotify library beforehand
+DIRTY_SEARCH_ON_MULTIPLE = False  # Allow dirty searching if no match was found for file
 
 
 def spotify_setup() -> spotipy.Spotify:
@@ -57,8 +60,12 @@ def sync_youtube_to_spotify(
     duplicates = []
     added = []
     errors = []
+    reversed_tracks: List[dict] = []
     # This is a hard limit of Youtube Music. 5000 max liked tracks lol
     for yt_track in ytmusic.get_liked_songs(5000)["tracks"]:
+        reversed_tracks.insert(0, yt_track)
+
+    for yt_track in reversed_tracks:
         if yt_track["videoType"] == "MUSIC_VIDEO_TYPE_ATV":
             track_name = yt_track["title"]
             track_artist = yt_track["artists"][0]["name"]
@@ -69,7 +76,21 @@ def sync_youtube_to_spotify(
             )
 
             tracks = results["tracks"]["items"]
+            
             if len(tracks) == 0:
+                if DIRTY_SEARCH_ON_MULTIPLE:
+                    cprint(
+                        f"Dirty search for {track_name}' with artist '{track_artist}'!",
+                        "yellow",
+                        "on_light_grey",
+                    )
+                    tracks = spotify.search(
+                        f"{track_name} {track_artist} {track_album}"
+                    )["tracks"]["items"]
+
+            if (
+                len(tracks) == 0
+            ):
                 cprint(
                     f"'{track_name}' with artist '{track_artist}' has no tracks matched!",
                     "yellow",
@@ -88,7 +109,7 @@ def sync_youtube_to_spotify(
                 print("------------------------------")
                 for duplicate_track in tracks:
                     print(
-                        f'Found: Track Name: {duplicate_track["name"]} Artist: {duplicate_track["artists"][0]["name"]} Album: {duplicate_track["album"]["name"]}'
+                        f'Found: Track Name: {duplicate_track["name"]}, Artist: {duplicate_track["artists"][0]["name"]}, Album: {duplicate_track["album"]["name"]}'
                     )
                 print("------------------------------")
                 duplicates.append(
@@ -100,7 +121,7 @@ def sync_youtube_to_spotify(
                     f"Name: {track_name}, Artist: {track_artist}, Album: {track_album}"
                 )
             except Exception as e:
-                cprint(f"Error occured! Message: {str(e)}", "red")
+                cprint(f"Error occured! Message: {e}", "red")
                 errors.append(str(e))
                 continue
 
