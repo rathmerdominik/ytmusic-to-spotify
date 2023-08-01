@@ -93,7 +93,7 @@ def handle_duplicates(
     track_artist: str,
     track_album: str,
     spotify: spotipy.Spotify,
-) -> dict:
+) -> List[dict]:
     cprint(
         f"{track_name} with artist {track_artist} has multiple tracks matched. Will sync first one",
         "blue",
@@ -105,7 +105,7 @@ def handle_duplicates(
             f'Found: Track Name: {duplicate_track["name"]}, Artist: {duplicate_track["artists"][0]["name"]}, Album: {duplicate_track["album"]["name"]}'
         )
     print("------------------------------")
-    return spotify_tracks[0]
+    return spotify_tracks
 
 
 def sync_youtube_to_spotify(
@@ -143,8 +143,9 @@ def sync_youtube_to_spotify(
                         not_found.append(
                             f"Name: {track_name}, Artist: {track_artist}, Album: {track_album}"
                         )
+                        continue
 
-                if len(spotify_tracks) > 1:
+                if len(spotify_tracks) >= 1:
                     spotify_tracks = handle_duplicates(
                         spotify_tracks, track_name, track_artist, track_album, spotify
                     )
@@ -152,7 +153,7 @@ def sync_youtube_to_spotify(
                         f"Name: {track_name}, Artist: {track_artist}, Album: {track_album}"
                     )
 
-                spotify.current_user_saved_tracks_add(spotify_tracks["id"])
+                spotify.current_user_saved_tracks_add([spotify_tracks[0]["id"]])
                 added.append(
                     f"Name: {track_name}, Artist: {track_artist}, Album: {track_album}"
                 )
