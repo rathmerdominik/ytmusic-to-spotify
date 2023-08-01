@@ -1,4 +1,5 @@
 import os
+import sys
 import spotipy  # type: ignore
 import ytmusicapi  # type: ignore
 
@@ -10,6 +11,9 @@ from librespot.core import Session  # type: ignore
 
 CLEANUP_FIRST = True  # Delete entire spotify library beforehand
 DIRTY_SEARCH_ON_MULTIPLE = False  # Allow dirty searching if no match was found for file
+USER_CHOICE_ON_MULTIPLE = (
+    True  # Allow the user to choose when multiple options have been found
+)
 
 
 def write_log(location: str, log_messages: List[str]) -> None:
@@ -87,25 +91,93 @@ def handle_not_found(
         return False
 
 
+def duplicate_choice(
+    spotify_tracks: List[dict],
+    track_name: str,
+    track_artist: str,
+    track_album: str,
+    spotify: spotipy.Spotify,
+) -> Union[List[dict], bool]:
+    LINE_UP = "\033[1A"
+    LINE_CLEAR = "\x1b[2K"
+
+    while True:
+        choice = input(
+            f"\n[1 - {len(spotify_tracks)}] => Track number \
+                        \n[s] => Search for a track \
+                        \n[x] => Exit the program \
+                        \n[c] => Skip this song \
+                        \nSelect an option > $  "
+        )
+
+        for i in range(6):
+            print(LINE_UP, end=LINE_CLEAR)
+        try:
+            return [spotify_tracks[int(choice)]]
+        except Exception:
+            if choice == "s":
+                while True:
+                    try:
+                        search_q = input(
+                            "Please enter search query or CTRL+C to cancel > "
+                        )
+
+                        tracks = spotify.search(search_q)["tracks"]["items"]
+                        print(LINE_UP, end=LINE_CLEAR)
+                        handle_duplicates(
+                            tracks, track_name, track_artist, track_album, spotify
+                        )
+                        break
+                    except KeyboardInterrupt:
+                        print(LINE_UP, end=LINE_CLEAR)
+                        print(LINE_UP, end=LINE_CLEAR)
+                        break
+                break
+            elif choice == "x":
+                print("Closing the program!")
+                sys.exit(0)
+                pass
+
+            elif choice == "c":
+                return False
+
+            else:
+                print("Wrong input! Please select one of the following:")
+
+
 def handle_duplicates(
     spotify_tracks: List[dict],
     track_name: str,
     track_artist: str,
     track_album: str,
     spotify: spotipy.Spotify,
-) -> List[dict]:
+) -> Union[List[dict], bool]:
+    first_match_string = ""
+    if not USER_CHOICE_ON_MULTIPLE:
+        first_match_string = (
+            " Will match the first one as user choice has not been enabled!"
+        )
+
     cprint(
-        f"{track_name} with artist {track_artist} has multiple tracks matched. Will sync first one",
+        f"{track_name} with artist {track_artist} and album {track_album} has multiple tracks matched.{first_match_string}",
         "blue",
     )
 
     print("------------------------------")
-    for duplicate_track in spotify_tracks:
+    for idx, duplicate_track in enumerate(spotify_tracks, 1):
         print(
-            f'Found: Track Name: {duplicate_track["name"]}, Artist: {duplicate_track["artists"][0]["name"]}, Album: {duplicate_track["album"]["name"]}'
+            f'{idx} Found: Track Name: {duplicate_track["name"]}, Artist: {duplicate_track["artists"][0]["name"]}, Album: {duplicate_track["album"]["name"]}'
         )
     print("------------------------------")
-    return spotify_tracks
+
+    if USER_CHOICE_ON_MULTIPLE:
+        chosen_track = duplicate_choice(
+            spotify_tracks, track_name, track_artist, track_album, spotify
+        )
+
+    else:
+        chosen_track = spotify_tracks
+    return chosen_track
 
 
 def sync_youtube_to_spotify(
@@ -145,15 +217,21 @@ def sync_youtube_to_spotify(
                         )
                         continue
 
-                if len(spotify_tracks) >= 1:
+                if len(spotify_tracks) > 1:
                     spotify_tracks = handle_duplicates(
                         spotify_tracks, track_name, track_artist, track_album, spotify
                     )
+                    if not spotify_tracks:
+                        continue
                     duplicates.append(
                         f"Name: {track_name}, Artist: {track_artist}, Album: {track_album}"
                     )
 
                 spotify.current_user_saved_tracks_add([spotify_tracks[0]["id"]])
+                cprint(
+                    f"Found and added track for {track_name} with artist {track_artist} and album {track_album}",
+                    "green",
+                )
                 added.append(
                     f"Name: {track_name}, Artist: {track_artist}, Album: {track_album}"
                 )
