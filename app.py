@@ -105,7 +105,7 @@ def duplicate_choice(
 
     while True:
         choice = input(
-            f"\n[1 - {len(spotify_tracks)}] => Track number \
+            f"[1 - {len(spotify_tracks)}] => Track number \
                         \n[s] => Search for a track \
                         \n[x] => Exit the program \
                         \n[c] => Skip this song \
