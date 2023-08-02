@@ -103,6 +103,8 @@ def duplicate_choice(
     LINE_UP = "\033[1A"
     LINE_CLEAR = "\x1b[2K"
 
+    chosen_track: Union[List[dict], bool] = []
+
     while True:
         choice = input(
             f"[1 - {len(spotify_tracks)}] => Track number \
@@ -112,39 +114,34 @@ def duplicate_choice(
                         \nSelect an option > $  "
         )
 
-        for i in range(6):
+        for i in range(5):
             print(LINE_UP, end=LINE_CLEAR)
         try:
-            return [spotify_tracks[int(choice) - 1]]
+            chosen_track = [spotify_tracks[int(choice) - 1]]
+            break
         except Exception:
             if choice == "s":
-                while True:
-                    try:
-                        search_q = input(
-                            "Please enter search query or CTRL+C to cancel > "
-                        )
+                search_q = input("Please enter search query > $ ")
 
-                        tracks = spotify.search(search_q)["tracks"]["items"]
-                        print(LINE_UP, end=LINE_CLEAR)
-                        handle_duplicates(
-                            tracks, track_name, track_artist, track_album, spotify
-                        )
-                        break
-                    except KeyboardInterrupt:
-                        print(LINE_UP, end=LINE_CLEAR)
-                        print(LINE_UP, end=LINE_CLEAR)
-                        break
+                tracks_to_handle = spotify.search(search_q)["tracks"]["items"]
+                print(LINE_UP, end=LINE_CLEAR)
+                chosen_track = handle_duplicates(
+                    tracks_to_handle, track_name, track_artist, track_album, spotify
+                )
+                print(LINE_UP, end=LINE_CLEAR)
                 break
             elif choice == "x":
                 print("Closing the program!")
                 sys.exit(0)
-                pass
-
             elif choice == "c":
-                return False
+                print(LINE_UP, end=LINE_CLEAR)
 
+                return False
             else:
                 print("Wrong input! Please select one of the following:")
+                continue
+
+    return chosen_track
 
 
 def handle_duplicates(
@@ -251,8 +248,10 @@ def sync_youtube_to_spotify(
 if __name__ == "__main__":
     if os.name == "nt":  # Windows at it again
         os.system("ansi")
+    try:
+        spotify = spotify_setup()
+        ytmusic = youtube_music_setup()
 
-    spotify = spotify_setup()
-    ytmusic = youtube_music_setup()
-
-    sync_youtube_to_spotify(ytmusic, spotify)
+        sync_youtube_to_spotify(ytmusic, spotify)
+    except KeyboardInterrupt:
+        print("\n--- Program exit requested ---")
