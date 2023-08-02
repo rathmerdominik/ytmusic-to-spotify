@@ -115,7 +115,7 @@ def duplicate_choice(
         for i in range(6):
             print(LINE_UP, end=LINE_CLEAR)
         try:
-            return [spotify_tracks[int(choice)]]
+            return [spotify_tracks[int(choice) - 1]]
         except Exception:
             if choice == "s":
                 while True:
