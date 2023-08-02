@@ -10,7 +10,9 @@ from termcolor import cprint
 from librespot.core import Session  # type: ignore
 
 CLEANUP_FIRST = True  # Delete entire spotify library beforehand
-DIRTY_SEARCH_ON_MULTIPLE = False  # Allow dirty searching if no match was found for file
+DIRTY_SEARCH_ON_NOT_FOUND = (
+    False  # Allow dirty searching if no match was found for file
+)
 USER_CHOICE_ON_MULTIPLE = (
     True  # Allow the user to choose when multiple options have been found
 )
@@ -71,7 +73,7 @@ def handle_not_found(
     track_name: str, track_artist: str, track_album: str, spotify: spotipy.Spotify
 ) -> Union[dict, bool]:
     tracks = {}
-    if DIRTY_SEARCH_ON_MULTIPLE:
+    if DIRTY_SEARCH_ON_NOT_FOUND:
         cprint(
             f"Dirty search for {track_name}' with artist '{track_artist}'!",
             "yellow",

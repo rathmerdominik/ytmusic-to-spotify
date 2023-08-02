@@ -14,6 +14,6 @@ The `added.log` file contains all found and converted tracks
 
 By default the script clears out your entire Spotify Library to have a clean starting base. This behaviour can be disabled by setting the constant `CLEANUP_FIRST` inside the code to False.
 
-If you have a lot of missing entries you can try to set the `DIRTY_SEARCH_ON_MULTIPLE` constant to True. This can have varying quality results though! 
+If you have a lot of missing entries you can try to set the `DIRTY_SEARCH_ON_NOT_FOUND` constant to True. This can have varying quality results though! 
 
 If you want the program to always take the first matching entry on multiple found matches then you can set `USER_CHOICE_ON_MULTIPLE` to False
