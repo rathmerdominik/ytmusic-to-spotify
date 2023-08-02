@@ -1,21 +1,27 @@
 import os
 import sys
 import spotipy  # type: ignore
+import argparse
 import ytmusicapi  # type: ignore
 
-from typing import List, Union
+
+from typing import List, Union, Optional
 
 from termcolor import cprint
 
+from dataclasses import dataclass
+
 from librespot.core import Session  # type: ignore
 
-CLEANUP_FIRST = True  # Delete entire spotify library beforehand
-DIRTY_SEARCH_ON_NOT_FOUND = (
-    False  # Allow dirty searching if no match was found for file
-)
-USER_CHOICE_ON_MULTIPLE = (
-    True  # Allow the user to choose when multiple options have been found
-)
+
+@dataclass
+class OptionArgs:
+    cleanup_spotify: bool
+    dirty_search: bool
+    user_choice: bool
+
+
+options: Optional[OptionArgs] = None
 
 
 def write_log(location: str, log_messages: List[str]) -> None:
@@ -56,7 +62,8 @@ def spotify_setup() -> spotipy.Spotify:
 
     spotify = spotipy.Spotify(auth=token.access_token)
 
-    if CLEANUP_FIRST:
+    assert options is not None
+    if options.cleanup_spotify:
         cleanup_spotify(spotify)
 
     return spotify
@@ -73,7 +80,9 @@ def handle_not_found(
     track_name: str, track_artist: str, track_album: str, spotify: spotipy.Spotify
 ) -> Union[dict, bool]:
     tracks = {}
-    if DIRTY_SEARCH_ON_NOT_FOUND:
+
+    assert options is not None
+    if options.dirty_search:
         cprint(
             f"Dirty search for {track_name}' with artist '{track_artist}'!",
             "yellow",
@@ -132,10 +141,8 @@ def duplicate_choice(
                 break
             elif choice == "x":
                 print("Closing the program!")
-                sys.exit(0)
+                raise KeyboardInterrupt
             elif choice == "c":
-                print(LINE_UP, end=LINE_CLEAR)
-
                 return False
             else:
                 print("Wrong input! Please select one of the following:")
@@ -152,7 +159,9 @@ def handle_duplicates(
     spotify: spotipy.Spotify,
 ) -> Union[List[dict], bool]:
     first_match_string = ""
-    if not USER_CHOICE_ON_MULTIPLE:
+
+    assert options is not None
+    if not options.user_choice:
         first_match_string = (
             " Will match the first one as user choice has not been enabled!"
         )
@@ -169,7 +178,7 @@ def handle_duplicates(
         )
     print("------------------------------")
 
-    if USER_CHOICE_ON_MULTIPLE:
+    if options.user_choice:
         chosen_track = duplicate_choice(
             spotify_tracks, track_name, track_artist, track_album, spotify
         )
@@ -248,6 +257,32 @@ def sync_youtube_to_spotify(
 if __name__ == "__main__":
     if os.name == "nt":  # Windows at it again
         os.system("ansi")
+
+    parser = argparse.ArgumentParser(
+        prog="YTMusic To Spotify",
+        description="Convert YTMusic likes to Spotify saved tracks",
+    )
+    parser.add_argument(
+        "-c",
+        "--cleanup_spotify",
+        action="store_true",
+        help="Clear your entire spotify saved tracks first before starting to import. This can help to have a clean synchronization",
+    )
+    parser.add_argument(
+        "-d",
+        "--dirty_search",
+        action="store_true",
+        help="Enable dirty searching for a track when no matches have been found.",
+    )
+    parser.add_argument(
+        "-u",
+        "--user_choice",
+        action="store_true",
+        help="Enable user choice on found duplicates. Not enabling this will always take the first entry found, when multiple matches occur!",
+    )
+
+    options = OptionArgs(**vars(parser.parse_args()))
+
     try:
         spotify = spotify_setup()
         ytmusic = youtube_music_setup()
