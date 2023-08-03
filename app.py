@@ -220,6 +220,11 @@ def sync_youtube_to_spotify(
                         track_name, track_artist, track_album, spotify
                     )
                     if not spotify_tracks:
+                        cprint(
+                            f"'{track_name}' with artist '{track_artist}' has no tracks matched!",
+                            "yellow",
+                        )
+
                         not_found.append(
                             f"Name: {track_name}, Artist: {track_artist}, Album: {track_album}"
                         )
