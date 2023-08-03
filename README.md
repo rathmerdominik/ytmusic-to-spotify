@@ -19,4 +19,3 @@ The `added.log` file contains all found and converted tracks
 `-d` Will do a dirty search to find a matching spotify track for youtube music tracks where no match could be found
 
 `-u` Will allow the user to choose what to do when multiple spotify tracks have been matched on one youtube music track
-<p></p>
