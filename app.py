@@ -1,5 +1,4 @@
 import os
-import sys
 import spotipy  # type: ignore
 import argparse
 import ytmusicapi  # type: ignore
