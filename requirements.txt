@@ -2,3 +2,5 @@ spotipy
 ytmusicapi
 librespot
 termcolor
+pytest
+pytest-mock

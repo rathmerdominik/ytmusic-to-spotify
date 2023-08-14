@@ -3,7 +3,6 @@ import spotipy  # type: ignore
 import argparse
 import ytmusicapi  # type: ignore
 
-
 from typing import List, Union, Optional
 
 from termcolor import cprint
@@ -37,14 +36,16 @@ def cleanup_spotify(spotify: spotipy.Spotify) -> None:
             break
         for item in items:
             spotify.current_user_saved_tracks_delete([item["track"]["id"]])
+        if len(items) == 0:
+            break
 
 
-def spotify_setup() -> spotipy.Spotify:
-    if os.path.isfile("credentials.json"):
+def spotify_setup(errors_found: bool = False) -> spotipy.Spotify:
+    if os.path.isfile("../../credentials.json") and not errors_found:
         try:
-            session = Session.Builder().stored_file().create()
-        except RuntimeError:
-            pass
+            session = Session.Builder().stored_file("../../credentials.json").create()
+        except Exception:
+            spotify_setup(True)
     else:
         while True:
             user_name = input("Spotify Username: ")
@@ -55,10 +56,10 @@ def spotify_setup() -> spotipy.Spotify:
                 print("Wrong credentials!")
                 pass
             break
+
     token = session.tokens().get_token(
         "user-library-read", "user-library-modify", "playlist-modify-private"
     )
-
     spotify = spotipy.Spotify(auth=token.access_token)
 
     assert options is not None
@@ -69,10 +70,10 @@ def spotify_setup() -> spotipy.Spotify:
 
 
 def youtube_music_setup() -> ytmusicapi.YTMusic:
-    if not os.path.isfile("oauth.json"):
-        ytmusicapi.setup_oauth(filepath="oauth.json", open_browser=True)
+    if not os.path.isfile("../../oauth.json"):
+        ytmusicapi.setup_oauth(filepath="../../oauth.json", open_browser=True)
 
-    return ytmusicapi.YTMusic("oauth.json")
+    return ytmusicapi.YTMusic("../../oauth.json")
 
 
 def handle_not_found(
@@ -223,7 +224,6 @@ def sync_youtube_to_spotify(
                             f"'{track_name}' with artist '{track_artist}' has no tracks matched!",
                             "yellow",
                         )
-
                         not_found.append(
                             f"Name: {track_name}, Artist: {track_artist}, Album: {track_album}"
                         )
@@ -252,10 +252,10 @@ def sync_youtube_to_spotify(
             errors.append(str(e))
             continue
 
-    write_log("added.log", added)
-    write_log("duplicates.log", duplicates)
-    write_log("errors.log", errors)
-    write_log("not_found.log", not_found)
+    write_log("../../added.log", added)
+    write_log("../../duplicates.log", duplicates)
+    write_log("../../errors.log", errors)
+    write_log("../../not_found.log", not_found)
 
 
 if __name__ == "__main__":

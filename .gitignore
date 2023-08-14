@@ -9,3 +9,6 @@ not_found.log
 venv/
 
 .mypy_cache/
+.pytest_cache/
+
+__pycache__/

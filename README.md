@@ -1,4 +1,4 @@
- <h1 align="center">YTMusic Likes to Spotify Saved Tracks converter </h1>
+<h1 align="center">YTMusic Likes to Spotify Saved Tracks converter </h1>
 
 I needed a quick way to transfer my YouTube Music likes over to Spotify as there is no official Linux YouTube music client and the third party ones are just painful to use as they are laggy and full of errors.
 
