@@ -7,11 +7,23 @@ This script ports all of your Youtube Music likes over to Spotify. There is no n
 <h2>Logs</h2>
 The script will generate 4 files when it is done:  
 
-<strong>The `error.log` file contains all the errors that occur during the run
+<strong>The `error.log` file contains all the errors that occur during the run  
 The `duplicate.log` file contains all tracks where duplicates have been found during runtime  
 The `not_found.log` file contains all tracks where no corresponding track on Spotify could be found. Please search for these manually  
 The `added.log` file contains all found and converted tracks
-</strong>
+</strong>\
+
+<h2>How to install and run</h2>
+
+```
+git clone https://github.com/rathmerdominik/ytmusic-to-spotify.git
+cd ytmusic-to-spotify
+python -m venv venv
+source venv/bin/activate 
+pip install -r requirements.txt
+python src/ytmusic_to_spotify/ytmusic_to_spotify.py --help
+```
+
 <h2>Options</h2>
 
 `-c` Will wipe all saved tracks you have from spotify to offer a clean base for syncing
