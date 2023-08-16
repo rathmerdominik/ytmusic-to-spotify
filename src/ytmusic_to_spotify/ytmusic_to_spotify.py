@@ -41,9 +41,9 @@ def cleanup_spotify(spotify: spotipy.Spotify) -> None:
 
 
 def spotify_setup(errors_found: bool = False) -> spotipy.Spotify:
-    if os.path.isfile("../../credentials.json") and not errors_found:
+    if os.path.isfile("credentials.json") and not errors_found:
         try:
-            session = Session.Builder().stored_file("../../credentials.json").create()
+            session = Session.Builder().stored_file("credentials.json").create()
         except Exception:
             spotify_setup(True)
     else:
@@ -70,10 +70,10 @@ def spotify_setup(errors_found: bool = False) -> spotipy.Spotify:
 
 
 def youtube_music_setup() -> ytmusicapi.YTMusic:
-    if not os.path.isfile("../../oauth.json"):
-        ytmusicapi.setup_oauth(filepath="../../oauth.json", open_browser=True)
+    if not os.path.isfile("oauth.json"):
+        ytmusicapi.setup_oauth(filepath="oauth.json", open_browser=True)
 
-    return ytmusicapi.YTMusic("../../oauth.json")
+    return ytmusicapi.YTMusic("oauth.json")
 
 
 def handle_not_found(
@@ -252,10 +252,10 @@ def sync_youtube_to_spotify(
             errors.append(str(e))
             continue
 
-    write_log("../../added.log", added)
-    write_log("../../duplicates.log", duplicates)
-    write_log("../../errors.log", errors)
-    write_log("../../not_found.log", not_found)
+    write_log("added.log", added)
+    write_log("duplicates.log", duplicates)
+    write_log("errors.log", errors)
+    write_log("not_found.log", not_found)
 
 
 if __name__ == "__main__":
